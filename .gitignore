@@ -1,0 +1,13 @@
+# Test reports and local files
+newman-results.json
+newman/
+work/
+outputs/
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Secrets
+.env
+*.local.postman_environment.json

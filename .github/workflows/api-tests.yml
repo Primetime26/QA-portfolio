@@ -1,0 +1,42 @@
+name: API tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  newman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Postman collection
+        run: >-
+          npx --yes newman@6.2.1 run
+          postman/DummyJSON.postman_collection.json
+          -e postman/local.postman_environment.json
+          --reporters cli,json
+          --reporter-json-export newman-results.json
+
+      - name: Upload Newman report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-results
+          path: newman-results.json
+          if-no-files-found: ignore
+          retention-days: 14

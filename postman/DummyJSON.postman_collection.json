@@ -1,0 +1,256 @@
+{
+  "info": {
+    "_postman_id": "a4f2ff86-4aaa-4d67-9dba-e0db33bbde6f",
+    "name": "QA Portfolio - DummyJSON Products API",
+    "description": "Демонстрационная коллекция Романа Отрякова: позитивные и негативные проверки Products API. Операции записи в DummyJSON имитируются и не сохраняют данные.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get products with pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Pagination metadata is correct', () => {",
+                  "  pm.expect(json.limit).to.eql(5);",
+                  "  pm.expect(json.skip).to.eql(0);",
+                  "  pm.expect(json.products).to.be.an('array').with.lengthOf(5);",
+                  "});",
+                  "pm.test('Every product follows the selected contract', () => {",
+                  "  json.products.forEach((product) => {",
+                  "    pm.expect(product.id).to.be.a('number');",
+                  "    pm.expect(product.title).to.be.a('string').and.not.empty;",
+                  "    pm.expect(product.price).to.be.a('number');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?limit=5&skip=0&select=title,price",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                {"key": "limit", "value": "5"},
+                {"key": "skip", "value": "0"},
+                {"key": "select", "value": "title,price"}
+              ]
+            },
+            "description": "TC-API-001: первая страница и выбор полей."
+          }
+        },
+        {
+          "name": "Get product by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Product contract is valid', () => {",
+                  "  pm.expect(json.id).to.eql(Number(pm.environment.get('productId')));",
+                  "  pm.expect(json.title).to.be.a('string').and.not.empty;",
+                  "  pm.expect(json.price).to.be.a('number').and.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            },
+            "description": "TC-API-002: получение существующего товара."
+          }
+        },
+        {
+          "name": "Product not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Safe JSON error is returned', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.be.a('string').and.not.empty;",
+                  "  pm.expect(pm.response.text()).not.to.include('at Object.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "999999"]
+            },
+            "description": "TC-API-003: негативная проверка неизвестного ID."
+          }
+        },
+        {
+          "name": "Search without matches",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Empty search result has consistent metadata', () => {",
+                  "  pm.expect(json.products).to.be.an('array').that.is.empty;",
+                  "  pm.expect(json.total).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/search?q=zzzz-no-match-qa-portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "search"],
+              "query": [
+                {"key": "q", "value": "zzzz-no-match-qa-portfolio"}
+              ]
+            },
+            "description": "TC-API-007: корректная пустая выдача."
+          }
+        },
+        {
+          "name": "Add product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Created product mirrors request data', () => {",
+                  "  pm.expect(json.id).to.be.a('number').and.above(0);",
+                  "  pm.expect(json.title).to.eql('QA Portfolio Test Product');",
+                  "  pm.expect(json.price).to.eql(19.99);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA Portfolio Test Product\",\n  \"price\": 19.99,\n  \"category\": \"test\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "add"]
+            },
+            "description": "TC-API-004: имитация создания товара."
+          }
+        },
+        {
+          "name": "Update product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Product is updated in response', () => {",
+                  "  pm.expect(json.id).to.eql(Number(pm.environment.get('productId')));",
+                  "  pm.expect(json.title).to.eql('QA Portfolio Updated Product');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA Portfolio Updated Product\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            },
+            "description": "TC-API-005: имитация частичного изменения товара."
+          }
+        },
+        {
+          "name": "Delete product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Deletion metadata is valid', () => {",
+                  "  pm.expect(json.id).to.eql(Number(pm.environment.get('productId')));",
+                  "  pm.expect(json.isDeleted).to.eql(true);",
+                  "  pm.expect(Number.isNaN(Date.parse(json.deletedOn))).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            },
+            "description": "TC-API-006: имитация удаления товара."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "https://dummyjson.com"},
+    {"key": "productId", "value": "1"}
+  ]
+}
