@@ -1,6 +1,6 @@
 # Роман Отряков — QA Engineer
 
-QA Engineer опыта тестирования web-приложений. Проверяю пользовательские сценарии, REST API и данные в БД; составляю понятную тестовую документацию и воспроизводимые баг-репорты. Развиваюсь в автоматизации тестирования на Java.
+QA Engineer с опытом тестирования web-приложений. Проверяю пользовательские сценарии, REST API и данные в БД; составляю понятную тестовую документацию и воспроизводимые баг-репорты. Развиваюсь в автоматизации тестирования на Java.
 
 [![API tests](https://github.com/Primetime26/qa-portfolio/actions/workflows/api-tests.yml/badge.svg)](https://github.com/Primetime26/qa-portfolio/actions/workflows/api-tests.yml)
 
